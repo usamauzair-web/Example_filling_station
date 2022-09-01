@@ -1,0 +1,78 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"*
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model users {
+  id                   BigInt           @id @default(autoincrement())
+  userName             String           @unique @db.VarChar(255)
+  nic                  String?          @db.VarChar(255)
+  userRole             Int              @default(1)
+  cashInHand           Decimal          @default(0)
+  createdVenders       venders[]        @relation("venderCreatedUser")
+  updatedVenders       venders[]        @relation("venderUpdatedUser")
+  createdCustomers     customers[]      @relation("customerCreatedUser")
+  updatedCustomers     customers[]      @relation("customerUpdatedUser")
+  createdTanks         tanks[]          @relation("tankCreateUser")
+  updatedTanks         tanks[]          @relation("tankUpdateUser")
+  createdItems         items[]          @relation("itemCreateUser")
+  updatedItems         items[]          @relation("itemUpdateUser")
+  createPumpMachine    pumpMachines[]   @relation("pumpMachinesCreateUser")
+  updatePumpMachine    pumpMachines[]   @relation("pumpMachinesUpdateUser")
+  createPumpOperators  pumpOperators[]  @relation("pumpOperatorsCreateUser")
+  updatePumpOperators  pumpOperators[]  @relation("pumpOperatorsUpdateUser")
+  updateWareHouses     wareHouses[]     @relation("wareHousesUpdateUser")
+  branches             branches[]
+}
+
+model venders {
+  id            BigInt   @id @default(autoincrement())
+  venderName   String   @db.VarChar(255)
+  address       String?
+  email         String?  @db.VarChar(255)
+  phone         String?  @db.VarChar(255)
+  balance       Decimal  @default(0)
+  createdUserId BigInt
+  updatedUserId BigInt
+  createdBy     users    @relation("venderCreatedUser", fields: [createdUserId], references: [id])
+  updatedBy     users    @relation("vendrUpdatedUser", fields: [updatedUserId], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now())
+}
+
+model customers {
+  id             BigInt   @id @default(autoincrement())
+  customerName   String   @db.VarChar(255)
+  address        String?
+  phone          String?  @db.VarChar(255)
+  email          String?  @db.VarChar(255)
+  nic            String?  @db.VarChar(255)
+  customerNature Int?
+  balance        Decimal? @default(0)
+  vehicleNo      String   @db.VarChar(255)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @default(now())
+  createdUserId  BigInt
+  updatedUserId  BigInt
+  createdBy      users    @relation("customerCreatedUser", fields: [createdUserId], references: [id])
+  updatedBy      users    @relation("customerUpdatedUser", fields: [updatedUserId], references: [id])
+}
+
+model branches {
+  id         BigInt   @id @default(autoincrement())
+  branchName String   @db.VarChar(255)
+  phone      String?  @db.VarChar(255)
+  address    String?
+  user       users    @relation(fields: [usersId], references: [id])
+  usersId    BigInt
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now())
+}
+
