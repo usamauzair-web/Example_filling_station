@@ -2,7 +2,7 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"*
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -42,7 +42,7 @@ model venders {
   createdUserId BigInt
   updatedUserId BigInt
   createdBy     users    @relation("venderCreatedUser", fields: [createdUserId], references: [id])
-  updatedBy     users    @relation("vendrUpdatedUser", fields: [updatedUserId], references: [id])
+  updatedBy     users    @relation("venderUpdatedUser", fields: [updatedUserId], references: [id])
   createdAt     DateTime @default(now())
   updatedAt     DateTime @default(now())
 }
@@ -101,18 +101,17 @@ model tanks {
   updatedUserId  BigInt
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @default(now())
-  createdBy      users          @relation("tankCreatedUser", fields: [createdUserId], references: [id])
-  updatedBy      users          @relation("vendrUpdatedUser", fields: [updatedUserId], references: [id])
-  itemId         BigInt       
+  createdBy      users          @relation("tankCreateUser", fields: [createdUserId], references: [id])
+  updatedBy      users          @relation("tankUpdateUser", fields: [updatedUserId], references: [id])
+  itemsId         BigInt       
   item           items          @relation(fields: [itemsId], references: [id])
-  updatedAt      DateTime       @default(now())
   refills        refills[]
   pumpMachine    pumpMachines[]
   tankDetails    tankDetails[]
-  wastage        wastages[]
+  wastages       wastages[]
 }
 
-model refill {
+model refills {
   id           BigInt        @id @default(autoincrement())
   refillAmount Decimal       @default(0)
   date         DateTime      @default(now())
@@ -131,10 +130,10 @@ model tankDetails {
   cost            Decimal       @default(0)
   sellingPrice    Decimal       
   liters          Decimal?
-  tank            tanks        @relation(fields:[tanksId], references: [id])
+  tank            tanks         @relation(fields:[tanksId], references: [id])
 }
 
-model wastage {
+model wastages {
   id              BigInt        @id @default(autoincrement())
   date            DateTime      @default(now())
   createdAt       DateTime      @default(now())
@@ -146,30 +145,48 @@ model wastage {
 }
 
 model pumpMachines {
-  id               BigInt        @id @default(autoincrement())
-  pumpName         String         @db.VarChar(255)
-  pumpOperatorId   BigInt 
+
+  id                 BigInt         @id @default(autoincrement())
+  pumpName           String         @db.VarChar(255)
+  pumpOperatorId     BigInt         @unique
+  createdUserId      BigInt
+  updatedUserId      BigInt
+  tanksId            BigInt
+  createdBy          users          @relation("pumpMachinesCreateUser", fields: [createdUserId], references: [id])
+  updatedBy          users          @relation("pumpMachinesUpdateUser", fields: [updatedUserId], references: [id])
+  tank               tanks          @relation(fields:[tanksId], references: [id])
+  pumpOperator       pumpOperators  @relation(fields:[pumpOperatorId], references: [id])
+  sales              sales[]
+  pumpMachineDetails pumpMachineDetails[]
+
 }
 
 model pumpOperators {
+
   id               BigInt         @id @default(autoincrement())
   name             String         @db.VarChar(255)
   address          String?
   phoneNo          String?        @db.VarChar(255)
   nic              String?        @db.VarChar(255)
   balance          Decimal?       @default(0)
+  createdUserId    BigInt
+  updatedUserId    BigInt
+  createdBy        users          @relation("pumpOperatorsCreateUser", fields: [createdUserId], references: [id])
+  updatedBy        users          @relation("pumpOperatorsUpdateUser", fields: [updatedUserId], references: [id])
+  pumpMachine      pumpMachines?
+  
 }
 
 model pumpMachineDetails {
 
     id              BigInt         @id @default(autoincrement())
-    pumpOperatorId  BigInt 
     pumpMachineId   BigInt
     startMeter      Decimal        @default(0)
     endMeter        Decimal        @default(0)
     date            DateTime       @default(now())
     amount          Decimal        @default(0)
-
+    pumpMachine     pumpMachines   @relation(fields:[pumpMachineId],references:[id])
+    
 }
 
 model items {
@@ -183,5 +200,20 @@ model items {
      measurementType Int?
      sellingPrice    Decimal        @default(0)
      editable        Boolean
-     
+     createdUserId   BigInt 
+     updatedUserId   BigInt
+     createdBy       users          @relation("itemCreateUser", fields: [createdUserId], references: [id])
+     updatedBy       users          @relation("itemUpdateUser", fields: [updatedUserId], references: [id])
+     tanks           tanks[]
+     wareHouses      wareHouses[]    
 }
+   
+    model wareHouses {
+      id              BigInt         @id @default(autoincrement())
+      vehicleNo       String         @db.VarChar(255)
+      itemsId         BigInt
+      updatedUserId   BigInt
+      item            items          @relation(fields:[itemsId],references:[id])
+      updatedBy       users          @relation("wareHousesUpdateUser",fields:[updatedUserId], references: [id])
+      
+    }
